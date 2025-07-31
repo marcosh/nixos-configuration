@@ -5,6 +5,7 @@
 { config, pkgs, ... }:
 let
   unstable = import <nixos-unstable> { config = { allowUnfree = true; }; };
+  devenv-1-3-1 = import <devenv-1-3-1> { config = { allowUnfree = true; }; };
 in
 {
   imports =
@@ -64,7 +65,7 @@ in
   services.printing.enable = true;
 
   # Enable sound with pipewire.
-  hardware.pulseaudio.enable = false;
+  services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
@@ -78,6 +79,7 @@ in
     # no need to redefine it in your config for now)
     #media-session.enable = true;
   };
+  services.teamviewer.enable = true;
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
@@ -86,11 +88,12 @@ in
   users.users.marcosh = {
     isNormalUser = true;
     description = "marcosh";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "docker" ];
     packages = with pkgs; [
       kdePackages.kate
     #  thunderbird
     ];
+    shell = pkgs.zsh;
   };
 
   # Install firefox.
@@ -106,7 +109,7 @@ in
     signal-desktop
     obs-studio
     keepassxc
-    unstable.devenv
+    devenv-1-3-1.devenv
     direnv
     (vscode-with-extensions.override {
       vscode = vscodium;
@@ -116,6 +119,10 @@ in
         haskell.haskell
         mkhl.direnv
         eamodio.gitlens
+        shardulm94.trailing-spaces
+        davidlday.languagetool-linter
+        ms-vsliveshare.vsliveshare
+        # unstable.vscode-extensions.ethersync.ethersync
       ] ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [
         {
           name = "run-on-save";
@@ -128,6 +135,24 @@ in
           publisher = "techer";
           version = "2.0.0";
           sha256 = "3XYRMuWEJfhureHmx1KfT+N9aBuqDagj0FErJQF/teg=";
+        }
+        {
+          name = "language-purescript";
+          publisher = "nwolverson";
+          version = "0.2.8";
+          sha256 = "2uOwCHvnlQQM8s8n7dtvIaMgpW8ROeoUraM02rncH9o=";
+        }
+        {
+          name = "ide-purescript";
+          publisher = "nwolverson";
+          version = "0.26.6";
+          sha256 = "zYLAcPgvfouMQj3NJlNJA0DNeayKxQhOYNloRN2YuU8=";
+        }
+        {
+          name = "bruno";
+          publisher = "bruno-api-client";
+          version = "3.1.0";
+          sha256 = "jLQincxitnVCCeeaoX0SOuj5PJyR7CdOjK4Kl52ShlA=";
         }
       ];
     })
@@ -145,6 +170,23 @@ in
     php83
     php83Packages.composer
     zoom-us
+    shotcut
+    htop
+    ungoogled-chromium
+    arduino-ide
+    gnome-calculator
+    yarn
+    librewolf
+    languagetool
+    zulu #java
+    kdePackages.audiocd-kio
+    kdePackages.kmines
+    kdePackages.markdownpart
+    rar
+    rustdesk
+    pandoc
+    teamviewer
+    # unstable.ethersync
   #  wget
   ];
 
@@ -211,19 +253,13 @@ in
   programs.zsh = {
     enable = true;
     enableCompletion = true;
-    # autosuggestion.enable = true;
+    autosuggestions.enable = true;
     syntaxHighlighting.enable = true;
 
     shellAliases = {
       update = "sudo nixos-rebuild switch";
     };
-    #history = {
-    #  size = 50000;
-      # path = "${config.xdg.dataHome}/zsh/history";
-    #};
-
-    # how to start tmux at start?
-
+    histSize = 50000;
   };
 
   programs.direnv.enable = true;
@@ -231,6 +267,9 @@ in
   nix.extraOptions = ''
     trusted-users = root marcosh
   '';
+  nix.settings = {
+    experimental-features = [ "nix-command" "flakes" ];
+  };
 
   # needed to run npm install on bm-frontend
   programs.nix-ld.enable = true;
@@ -244,6 +283,7 @@ in
       user.email = "pasafama@gmail.com";
       user.name = "Marco Perone";
       init.defaultBranch = "main";
+      gui.gcwarning = false;
     };
   };
 
